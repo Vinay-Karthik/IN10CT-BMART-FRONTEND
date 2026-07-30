@@ -1,0 +1,32 @@
+import axios from 'axios';
+
+const axiosInstance = axios.create({
+  baseURL: '/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('bmart_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+axiosInstance.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('bmart_token');
+      localStorage.removeItem('bmart_user');
+    }
+    return Promise.reject(error.response ? error.response.data : error);
+  }
+);
+
+export default axiosInstance;
