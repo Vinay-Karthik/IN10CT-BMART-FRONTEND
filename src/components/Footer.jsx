@@ -6,12 +6,13 @@ export default function Footer() {
   };
 
   return (
-    <footer style={{ marginTop: '60px', background: '#232f3e', color: 'white' }}>
+    <footer style={{ marginTop: '80px', background: 'var(--card-bg)', color: 'var(--text-dark)', borderTop: '1px solid var(--border-color)' }}>
       <button 
         onClick={scrollToTop}
         style={{
-          width: '100%', background: '#37475a', border: 'none', color: 'white',
-          padding: '14px', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer'
+          width: '100%', background: 'var(--nav-light)', border: 'none', color: 'var(--text-dark)',
+          padding: '16px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer',
+          borderBottom: '1px solid var(--border-color)', letterSpacing: '0.05em', textTransform: 'uppercase'
         }}
       >
         Back to top
@@ -23,40 +24,40 @@ export default function Footer() {
         fontSize: '0.85rem'
       }}>
         <div>
-          <h4 style={{ fontSize: '1rem', marginBottom: '14px', color: 'white' }}>Get to Know Us</h4>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>About B-MART</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Careers</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Press Releases</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>B-MART Science</p>
+          <h4 style={{ fontSize: '0.9rem', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)' }}>Get to Know Us</h4>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>About B-MART</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Careers</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Press Releases</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>B-MART Science</p>
         </div>
 
         <div>
-          <h4 style={{ fontSize: '1rem', marginBottom: '14px', color: 'white' }}>Connect with Us</h4>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Facebook</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Twitter</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Instagram</p>
+          <h4 style={{ fontSize: '0.9rem', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)' }}>Connect with Us</h4>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Facebook</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Twitter</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Instagram</p>
         </div>
 
         <div>
-          <h4 style={{ fontSize: '1rem', marginBottom: '14px', color: 'white' }}>Make Money with Us</h4>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Sell on B-MART</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Protect and Build Your Brand</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>B-MART Global Selling</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Become an Affiliate</p>
+          <h4 style={{ fontSize: '0.9rem', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)' }}>Make Money with Us</h4>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Sell on B-MART</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Protect and Build Your Brand</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>B-MART Global Selling</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Become an Affiliate</p>
         </div>
 
         <div>
-          <h4 style={{ fontSize: '1rem', marginBottom: '14px', color: 'white' }}>Let Us Help You</h4>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>COVID-19 and B-MART</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Your Account</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Returns Centre</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>100% Purchase Protection</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>B-MART App Download</p>
-          <p style={{ color: '#ccc', marginBottom: '8px' }}>Help</p>
+          <h4 style={{ fontSize: '0.9rem', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)' }}>Let Us Help You</h4>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>COVID-19 and B-MART</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Your Account</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Returns Centre</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>100% Purchase Protection</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>B-MART App Download</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Help</p>
         </div>
       </div>
 
-      <div style={{ borderTop: '1px solid #37475a', padding: '20px', textAlign: 'center', fontSize: '0.8rem', color: '#ccc' }}>
+      <div style={{ borderTop: '1px solid var(--border-color)', padding: '24px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
         <p>© 2026 B-MART.in, Inc. or its affiliates. All rights reserved.</p>
       </div>
     </footer>

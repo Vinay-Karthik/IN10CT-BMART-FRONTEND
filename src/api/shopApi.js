@@ -9,10 +9,11 @@ export const cartApi = {
 };
 
 export const orderApi = {
-  createOrder: (shippingAddress) => axiosInstance.post('/orders', { shippingAddress }),
+  createOrder: (shippingAddress, paymentMode = 'RAZORPAY') => axiosInstance.post('/orders', { shippingAddress, paymentMode }),
   getUserOrders: () => axiosInstance.get('/orders'),
   getOrderById: (id) => axiosInstance.get(`/orders/${id}`),
   verifyPayment: (data) => axiosInstance.post('/payments/verify', data),
+  getRazorpayKey: () => axiosInstance.get('/payments/key'),
 };
 
 export const userApi = {

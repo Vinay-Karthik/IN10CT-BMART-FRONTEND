@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { cartApi } from '../api/shopApi';
 import { setCart } from '../store/slices/cartSlice';
-import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowRight, Truck, RotateCcw, ShieldCheck } from 'lucide-react';
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -53,71 +53,123 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '30px', margin: '30px auto' }}>
-      {/* Items List */}
-      <div style={{ background: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #ddd' }}>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: '800', borderBottom: '1px solid #eee', paddingBottom: '14px', marginBottom: '20px' }}>
-          Shopping Cart ({items.length} items)
-        </h1>
+    <div className="container" style={{ margin: '40px auto' }}>
+      {/* Steps Indicator */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginBottom: '40px', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1.2px', borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' }}>
+        <span style={{ color: 'var(--text-dark)', borderBottom: '2px solid var(--text-dark)', paddingBottom: '18px', marginBottom: '-21px' }}>01 Shopping Cart</span>
+        <span style={{ color: 'var(--text-muted)' }}>02 Checkout Details</span>
+        <span style={{ color: 'var(--text-muted)' }}>03 Order Complete</span>
+      </div>
 
-        {items.map(item => (
-          <div key={item.id} style={{ display: 'flex', gap: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px', marginBottom: '20px' }}>
-            <img src={item.product.imageUrl} alt={item.product.name} style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
-            
-            <div style={{ flex: 1 }}>
-              <Link to={`/products/${item.product.productId}`} style={{ fontWeight: '700', fontSize: '1rem', color: '#111' }}>
-                {item.product.name}
-              </Link>
-              <div style={{ color: 'green', fontSize: '0.85rem', fontWeight: '600', marginTop: '4px' }}>In Stock</div>
+      <div className="split-layout">
+        {/* Left Column: Items List & Notes */}
+        <div>
+        <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: '800', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '24px' }}>
+            Your Cart
+          </h1>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '0.85rem', color: '#555' }}>Qty:</span>
-                  <select
-                    value={item.quantity}
-                    onChange={(e) => handleUpdateQuantity(item.id, Number(e.target.value))}
-                    style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #ccc' }}
+          {items.map(item => (
+            <div key={item.id} style={{ display: 'flex', gap: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '24px', marginBottom: '24px', alignItems: 'center' }}>
+              <div style={{ width: '100px', height: '100px', background: 'var(--img-bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <img src={item.product.imageUrl} alt={item.product.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+              </div>
+              
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Link to={`/products/${item.product.productId}`} style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--text-dark)' }}>
+                  {item.product.name}
+                </Link>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '4px' }}>Brand: {item.product.brand || 'B-MART'}</div>
+                <div style={{ color: 'var(--text-dark)', fontWeight: '700', fontSize: '1.1rem', marginTop: '8px' }}>₹{Number(item.product.price).toLocaleString('en-IN')}</div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '14px' }}>
+                  <div className="quantity-pill">
+                    <button onClick={() => handleUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}>-</button>
+                    <span>{item.quantity}</span>
+                    <button onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}>+</button>
+                  </div>
+
+                  <button 
+                    onClick={() => handleRemove(item.id)}
+                    style={{ background: 'none', border: 'none', color: '#e53e3e', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}
                   >
-                    {[1, 2, 3, 4, 5, 10].map(n => <option key={n} value={n}>{n}</option>)}
-                  </select>
+                    <Trash2 size={15} /> Delete
+                  </button>
                 </div>
-
-                <button 
-                  onClick={() => handleRemove(item.id)}
-                  style={{ background: 'none', border: 'none', color: '#007185', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <Trash2 size={14} /> Delete
-                </button>
               </div>
             </div>
+          ))}
+        </div>
 
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: '800', fontSize: '1.2rem' }}>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</div>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>₹{item.product.price} each</div>
+        {/* Add Order Note (Reference style) */}
+        <div style={{ background: 'var(--card-bg)', padding: '24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', marginTop: '24px' }}>
+          <label style={{ fontWeight: '700', fontSize: '0.9rem', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Add Order Note</label>
+          <textarea 
+            placeholder="Write your note here..." 
+            rows="3"
+            style={{ width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'transparent', resize: 'vertical' }}
+          />
+        </div>
+      </div>
+
+      {/* Right Column: Order Summary & Trust Badges */}
+      <div>
+        <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Order Summary</h3>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+            <span>Subtotal:</span>
+            <span>₹{(totalAmount * 0.9).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+            <span>Shipping:</span>
+            <span>Free</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+            <span>Tax (10%):</span>
+            <span>₹{(totalAmount * 0.1).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '16px', marginBottom: '24px' }}>
+            <span style={{ fontWeight: '700', fontSize: '1.05rem' }}>Total:</span>
+            <span style={{ fontWeight: '800', fontSize: '1.3rem' }}>₹{totalAmount.toLocaleString('en-IN')}</span>
+          </div>
+
+          <button 
+            className="btn-amber" 
+            onClick={() => navigate('/checkout')}
+            style={{ margin: 0 }}
+          >
+            Proceed to Checkout
+          </button>
+        </div>
+
+        {/* Trust Badges below Order Summary */}
+        <div style={{ background: 'var(--card-bg)', padding: '24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Truck size={18} color="var(--text-dark)" />
+            <div style={{ fontSize: '0.8rem', textAlign: 'left' }}>
+              <div style={{ fontWeight: '700' }}>Free Shipping</div>
+              <div style={{ color: 'var(--text-muted)' }}>On orders over ₹499</div>
             </div>
           </div>
-        ))}
-      </div>
-
-      {/* Cart Summary */}
-      <div style={{ background: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #ddd', height: 'fit-content' }}>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: '800', marginBottom: '16px' }}>Order Summary</h3>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.95rem' }}>
-          <span>Subtotal:</span>
-          <span style={{ fontWeight: '800', fontSize: '1.2rem' }}>₹{totalAmount.toLocaleString('en-IN')}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <RotateCcw size={18} color="var(--text-dark)" />
+            <div style={{ fontSize: '0.8rem', textAlign: 'left' }}>
+              <div style={{ fontWeight: '700' }}>Easy Returns</div>
+              <div style={{ color: 'var(--text-muted)' }}>10-day return policy</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <ShieldCheck size={18} color="var(--text-dark)" />
+            <div style={{ fontSize: '0.8rem', textAlign: 'left' }}>
+              <div style={{ fontWeight: '700' }}>Secure Checkout</div>
+              <div style={{ color: 'var(--text-muted)' }}>100% secure checkout</div>
+            </div>
+          </div>
         </div>
-        <div style={{ color: 'green', fontSize: '0.85rem', fontWeight: '600', marginBottom: '20px' }}>
-          ✓ Your order qualifies for FREE Delivery across India
-        </div>
-
-        <button 
-          className="btn-amber" 
-          onClick={() => navigate('/checkout')}
-          style={{ padding: '12px', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-        >
-          Proceed to Checkout <ArrowRight size={18} />
-        </button>
       </div>
+    </div>
     </div>
   );
 }

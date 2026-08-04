@@ -117,6 +117,29 @@ export default function ProfilePage() {
 
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0', position: 'relative' }}>
+        {/* Background Track Line */}
+        <div style={{
+          position: 'absolute',
+          top: '16px', // Center vertically matching the 32px height circle's radius
+          left: '10%', // Offset starting at the center of the first column
+          right: '10%', // Offset ending at the center of the last column
+          height: '4px',
+          background: '#e0e0e0',
+          zIndex: 0
+        }} />
+
+        {/* Active Progress Line */}
+        <div style={{
+          position: 'absolute',
+          top: '16px',
+          left: '10%',
+          width: `${(currentIdx / (steps.length - 1)) * 80}%`, // Dynamically scale matching columns
+          height: '4px',
+          background: '#2e7d32',
+          zIndex: 0,
+          transition: 'width 0.3s ease'
+        }} />
+
         {steps.map((step, idx) => {
           const isDone = idx <= currentIdx;
           return (
@@ -141,13 +164,13 @@ export default function ProfilePage() {
   return (
     <div className="container" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '30px', margin: '30px auto' }}>
       {/* Sidebar Navigation */}
-      <div style={{ background: 'white', padding: '16px', borderRadius: '16px', border: '1px solid #ddd', height: 'fit-content' }}>
+      <div style={{ background: 'var(--card-bg)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-color)', height: 'fit-content' }}>
         <button
           onClick={() => setActiveTab('profile')}
           style={{
             width: '100%', padding: '12px', borderRadius: '8px', border: 'none',
-            background: activeTab === 'profile' ? '#fff8e7' : 'none',
-            color: activeTab === 'profile' ? '#f08804' : '#333',
+            background: activeTab === 'profile' ? 'rgba(240, 136, 4, 0.15)' : 'none',
+            color: activeTab === 'profile' ? '#f08804' : 'var(--text-dark)',
             fontWeight: activeTab === 'profile' ? '700' : '500',
             textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '4px'
           }}
@@ -159,8 +182,8 @@ export default function ProfilePage() {
           onClick={() => setActiveTab('orders')}
           style={{
             width: '100%', padding: '12px', borderRadius: '8px', border: 'none',
-            background: activeTab === 'orders' ? '#fff8e7' : 'none',
-            color: activeTab === 'orders' ? '#f08804' : '#333',
+            background: activeTab === 'orders' ? 'rgba(240, 136, 4, 0.15)' : 'none',
+            color: activeTab === 'orders' ? '#f08804' : 'var(--text-dark)',
             fontWeight: activeTab === 'orders' ? '700' : '500',
             textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '4px'
           }}
@@ -172,8 +195,8 @@ export default function ProfilePage() {
           onClick={() => setActiveTab('notifications')}
           style={{
             width: '100%', padding: '12px', borderRadius: '8px', border: 'none',
-            background: activeTab === 'notifications' ? '#fff8e7' : 'none',
-            color: activeTab === 'notifications' ? '#f08804' : '#333',
+            background: activeTab === 'notifications' ? 'rgba(240, 136, 4, 0.15)' : 'none',
+            color: activeTab === 'notifications' ? '#f08804' : 'var(--text-dark)',
             fontWeight: activeTab === 'notifications' ? '700' : '500',
             textAlign: 'left', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer'
           }}
@@ -202,11 +225,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile & Address Edit Form */}
-            <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #ddd', marginBottom: '24px' }}>
+            <div style={{ background: 'var(--card-bg)', color: 'var(--text-dark)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Edit3 size={20} color="#f08804" /> Personal & Contact Details
               </h2>
-              <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '20px' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
                 View and update your phone number, full name, and delivery address preferences.
               </p>
 
@@ -226,7 +249,7 @@ export default function ProfilePage() {
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Your full name"
                       required
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
                     />
                   </div>
 
@@ -240,12 +263,12 @@ export default function ProfilePage() {
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="10-digit mobile number"
                       required
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontWeight: '600' }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)', fontWeight: '600' }}
                     />
                   </div>
                 </div>
 
-                <div style={{ borderTop: '1px solid #eee', pt: '16px', marginTop: '16px', marginBottom: '16px' }}>
+                <div style={{ borderTop: '1px solid var(--border-color)', pt: '16px', marginTop: '16px', marginBottom: '16px' }}>
                   <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <MapPin size={18} color="#007185" /> Saved Shipping Address
                   </h3>
@@ -257,7 +280,7 @@ export default function ProfilePage() {
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="Flat 402, B-MART Heights, Outer Ring Road"
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
                     />
                   </div>
 
@@ -269,7 +292,7 @@ export default function ProfilePage() {
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="Bengaluru"
-                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
                       />
                     </div>
 
@@ -280,7 +303,7 @@ export default function ProfilePage() {
                         value={stateName}
                         onChange={(e) => setStateName(e.target.value)}
                         placeholder="Karnataka"
-                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
                       />
                     </div>
 
@@ -291,7 +314,7 @@ export default function ProfilePage() {
                         value={pincode}
                         onChange={(e) => setPincode(e.target.value)}
                         placeholder="560103"
-                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
                       />
                     </div>
                   </div>
@@ -304,7 +327,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Security & Password */}
-            <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #ddd' }}>
+            <div style={{ background: 'var(--card-bg)', color: 'var(--text-dark)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
               <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <KeyRound size={20} color="#f08804" /> Security & Password
               </h2>
@@ -319,7 +342,7 @@ export default function ProfilePage() {
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
                       required
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
                     />
                   </div>
                   <div>
@@ -330,7 +353,7 @@ export default function ProfilePage() {
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
                       minLength={6}
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
                     />
                   </div>
                 </div>
@@ -341,20 +364,20 @@ export default function ProfilePage() {
         )}
 
         {activeTab === 'orders' && (
-          <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #ddd' }}>
+          <div style={{ background: 'var(--card-bg)', color: 'var(--text-dark)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
             <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '20px' }}>Your Order History</h2>
 
             {ordersLoading ? (
               <div>Loading your orders...</div>
             ) : orders.length === 0 ? (
-              <p style={{ color: '#666' }}>You have not placed any orders yet.</p>
+              <p style={{ color: 'var(--text-muted)' }}>You have not placed any orders yet.</p>
             ) : (
               orders.map(o => (
-                <div key={o.orderId} style={{ border: '1px solid #ddd', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', pb: '12px', marginBottom: '16px' }}>
+                <div key={o.orderId} style={{ border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', pb: '12px', marginBottom: '16px' }}>
                     <div>
                       <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>Order #{o.orderId}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#666' }}>Placed on: {new Date(o.createdAt).toLocaleDateString()}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Placed on: {new Date(o.createdAt).toLocaleDateString()}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: '800', fontSize: '1.2rem' }}>₹{o.totalAmount}</div>
@@ -375,7 +398,7 @@ export default function ProfilePage() {
                         <img src={item.product.imageUrl} alt={item.product.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px' }} />
                         <div style={{ flex: 1, fontSize: '0.9rem' }}>
                           <span style={{ fontWeight: '600' }}>{item.product.name}</span>
-                          <span style={{ color: '#666', marginLeft: '8px' }}>x {item.quantity}</span>
+                          <span style={{ color: 'var(--text-muted)', marginLeft: '8px' }}>x {item.quantity}</span>
                         </div>
                         <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>₹{item.totalPrice}</div>
                       </div>
@@ -388,24 +411,24 @@ export default function ProfilePage() {
         )}
 
         {activeTab === 'notifications' && (
-          <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #ddd' }}>
+          <div style={{ background: 'var(--card-bg)', color: 'var(--text-dark)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
             <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '20px' }}>In-App Notifications</h2>
             {notifications.length === 0 ? (
-              <p style={{ color: '#666' }}>No notifications found.</p>
+              <p style={{ color: 'var(--text-muted)' }}>No notifications found.</p>
             ) : (
               notifications.map(n => (
                 <div 
                   key={n.notificationId} 
                   style={{
                     padding: '16px', borderRadius: '10px', marginBottom: '12px',
-                    background: n.read ? '#fafafa' : '#fff8e7', border: '1px solid #eee',
+                    background: n.read ? 'var(--body-bg)' : 'rgba(240, 136, 4, 0.15)', border: '1px solid var(--border-color)',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                   }}
                 >
                   <div>
                     <h4 style={{ fontWeight: '700', fontSize: '0.95rem' }}>{n.title}</h4>
-                    <p style={{ color: '#444', fontSize: '0.85rem', marginTop: '4px' }}>{n.message}</p>
-                    <span style={{ fontSize: '0.75rem', color: '#888' }}>{new Date(n.createdAt).toLocaleString()}</span>
+                    <p style={{ color: 'var(--text-dark)', fontSize: '0.85rem', marginTop: '4px' }}>{n.message}</p>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(n.createdAt).toLocaleString()}</span>
                   </div>
                   {!n.read && (
                     <button

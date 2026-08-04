@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { productApi } from '../api/productApi';
 import ProductCard from '../components/ProductCard';
-import { ShieldCheck, Truck, RotateCcw, CreditCard } from 'lucide-react';
+import { ShieldCheck, Truck, RotateCcw, CreditCard, Star, Sparkles } from 'lucide-react';
 
 export default function HomePage() {
   const [categories, setCategories] = useState([]);
@@ -23,60 +23,70 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, #131921 0%, #232f3e 60%, #37475a 100%)',
-        color: 'white', padding: '60px 20px', textAlign: 'center', position: 'relative'
-      }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-          <span style={{ background: '#febd69', color: '#111', fontWeight: '800', fontSize: '0.8rem', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase' }}>
-            Exclusive Collection 2026
+      <div className="hero-wrapper">
+        <div className="hero-info animate-fade-up">
+          <span className="hero-subtitle">
+            New Collection
           </span>
-          <h1 style={{ fontSize: '2.8rem', fontWeight: '800', margin: '16px 0 10px', letterSpacing: '-1px' }}>
-            Premium Backpacks, Handbags & Travel Luggage
+          <h1 className="hero-heading">
+            Carry Your<br/>Style Everywhere
           </h1>
-          <p style={{ fontSize: '1.1rem', color: '#ccc', marginBottom: '24px' }}>
-            Discover India’s finest bag collections. Free shipping on all orders over ₹499.
+          <p className="hero-description">
+            Discover our new collection of premium bags designed for every occasion, combining modern practicality with sophisticated design.
           </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-            <Link to="/products" className="btn-primary" style={{ padding: '12px 28px', fontSize: '1rem', width: 'auto' }}>
-              Explore Catalog
+          <div>
+            <Link to="/products" className="hero-cta-btn">
+              Shop Now
             </Link>
+          </div>
+        </div>
+
+        <div className="hero-visual">
+          <div className="hero-image-container animate-float">
+            {/* Glass badges */}
+            <div className="hero-badge-glass" style={{ top: '15px', left: '-20px' }}>
+              <Sparkles size={14} color="var(--text-dark)" />
+              <span>Premium Quality</span>
+            </div>
+            <div className="hero-badge-glass" style={{ bottom: '30px', right: '-20px' }}>
+              <Star size={14} fill="currentColor" color="var(--text-dark)" />
+              <span>4.9 rated</span>
+            </div>
+            <img src="/uploads/handbags/handbag3.jpg" alt="Hero Bag" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           </div>
         </div>
       </div>
 
       {/* Feature Badges */}
-      <div style={{ background: 'white', borderBottom: '1px solid #ddd', padding: '20px' }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', textAlign: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <Truck size={28} color="#007185" />
+      <div className="feature-section">
+        <div className="feature-inner-grid">
+          <div className="feature-item-card">
+            <div className="feature-icon-box">
+              <Truck size={22} />
+            </div>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>Fast Delivery</div>
-              <div style={{ fontSize: '0.8rem', color: '#565959' }}>Ships in 24 hours</div>
+              <div style={{ fontWeight: '700', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Free Shipping</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>On orders over ₹499</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <ShieldCheck size={28} color="#007185" />
+          <div className="feature-item-card">
+            <div className="feature-icon-box">
+              <RotateCcw size={22} />
+            </div>
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>100% Genuine</div>
-              <div style={{ fontSize: '0.8rem', color: '#565959' }}>Direct brand warranty</div>
+              <div style={{ fontWeight: '700', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Easy Returns</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>10-day return policy</div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <RotateCcw size={28} color="#007185" />
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>Easy 10-Day Returns</div>
-              <div style={{ fontSize: '0.8rem', color: '#565959' }}>No questions asked</div>
+          <div className="feature-item-card">
+            <div className="feature-icon-box">
+              <ShieldCheck size={22} />
             </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <CreditCard size={28} color="#007185" />
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>Secure Payments</div>
-              <div style={{ fontSize: '0.8rem', color: '#565959' }}>Razorpay & UPI Protected</div>
+              <div style={{ fontWeight: '700', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Secure Checkout</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>100% secure payment methods</div>
             </div>
           </div>
         </div>
@@ -84,26 +94,25 @@ export default function HomePage() {
 
       <div className="container">
         {/* Categories Section */}
-        <div style={{ margin: '40px 0 20px' }}>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: '800', marginBottom: '20px' }}>
+        <div style={{ margin: '60px 0 40px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.8px' }}>
             Shop by Category
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '40px' }}>
+            Explore curated collections designed specifically for your style.
+          </p>
+          <div className="editorial-category-grid">
             {categories.map((cat) => (
               <Link 
                 key={cat.categoryId} 
                 to={`/products?categoryId=${cat.categoryId}`}
-                style={{
-                  background: 'white', borderRadius: '12px', overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'transform 0.2s',
-                  display: 'flex', flexDirection: 'column', height: '220px'
-                }}
+                className="category-editorial-card"
               >
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <img src={cat.imageUrl} alt={cat.categoryName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <div style={{ padding: '14px', textAlign: 'center', fontWeight: '700', fontSize: '1rem', background: '#fff' }}>
-                  {cat.categoryName}
+                <img src={cat.imageUrl} alt={cat.categoryName} className="category-editorial-img" />
+                <div className="category-editorial-overlay">
+                  <div className="category-editorial-title">
+                    {cat.categoryName}
+                  </div>
                 </div>
               </Link>
             ))}
@@ -111,16 +120,23 @@ export default function HomePage() {
         </div>
 
         {/* Featured Products */}
-        <div style={{ margin: '50px 0 20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '1.6rem', fontWeight: '800' }}>
-              Featured Bag Collections
-            </h2>
-            <Link to="/products" style={{ color: '#007185', fontWeight: '600' }}>See all products →</Link>
+        <div style={{ margin: '100px 0 40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
+            <div>
+              <h2 style={{ fontSize: '2rem', fontWeight: '800', letterSpacing: '-0.8px' }}>
+                Featured Collections
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '4px' }}>
+                Handpicked premium designs, trending this season.
+              </p>
+            </div>
+            <Link to="/products" style={{ color: 'var(--text-dark)', fontWeight: '700', fontSize: '0.9rem', textDecoration: 'underline', paddingBottom: '4px' }}>
+              See all products
+            </Link>
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>Loading products...</div>
+            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>Loading products...</div>
           ) : (
             <div className="product-grid">
               {featuredProducts.map((product) => (
@@ -128,6 +144,59 @@ export default function HomePage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Secondary Banner */}
+        <div className="secondary-banner-grid">
+          <div className="secondary-banner-content">
+            <span style={{ color: 'var(--text-muted)', fontWeight: '800', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px' }}>
+              Premium Quality
+            </span>
+            <h2 style={{ fontSize: '2.4rem', fontWeight: '800', margin: '14px 0 16px', letterSpacing: '-1px', color: 'var(--text-dark)', lineHeight: '1.2' }}>
+              Crafted for You
+            </h2>
+            <p style={{ fontSize: '1.05rem', color: 'var(--text-muted)', marginBottom: '32px', maxWidth: '420px', lineHeight: '1.6' }}>
+              Elevate your everyday style with bags crafted from premium, long-lasting materials and designed for ultimate function.
+            </p>
+            <Link to="/products" className="btn-primary" style={{ padding: '14px 36px', fontSize: '0.85rem', width: 'auto', display: 'inline-block', borderRadius: '4px' }}>
+              Explore Collection
+            </Link>
+          </div>
+          <div className="secondary-banner-image-box">
+            <img src="/uploads/handbags/handbag2.jpg" alt="Crafted Bag" className="secondary-banner-image" />
+          </div>
+        </div>
+
+        {/* Newsletter Subscription Box */}
+        <div className="newsletter-section">
+          <h2 className="newsletter-title">Stay in Style</h2>
+          <p className="newsletter-desc">
+            Subscribe to our newsletter to receive access to exclusive collections, design releases, and special member offers.
+          </p>
+          <form onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing to B-MART!'); }} className="newsletter-form">
+            <input type="email" placeholder="Enter your email address" className="newsletter-input" required />
+            <button type="submit" className="btn-primary newsletter-btn">Subscribe</button>
+          </form>
+        </div>
+
+        {/* Bottom Feature Badges */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '30px', borderTop: '1px solid var(--border-color)', paddingTop: '40px', marginTop: '80px', textAlign: 'center' }}>
+          <div>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Premium Quality</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Finest materials & craftsmanship</p>
+          </div>
+          <div>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Stylish Designs</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>For every modern lifestyle</p>
+          </div>
+          <div>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Customer Support</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>We are always here to help you</p>
+          </div>
+          <div>
+            <h4 style={{ fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Secure Shopping</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>Your data is completely safe</p>
+          </div>
         </div>
       </div>
     </div>

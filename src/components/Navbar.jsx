@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingBag, Search, MapPin, User, Heart, Bell, LogOut, Package, Store, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, Search, MapPin, User, Heart, Bell, LogOut, Package, Store, ShieldCheck, Sun, Moon } from 'lucide-react';
 import { logout } from '../store/slices/authSlice';
 import { cartApi, notificationApi } from '../api/shopApi';
 import { productApi } from '../api/productApi';
@@ -18,6 +18,16 @@ export default function Navbar() {
   const [categories, setCategories] = useState([]);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     productApi.getCategories().then(res => {
@@ -54,130 +64,93 @@ export default function Navbar() {
   const isAdmin = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN';
 
   return (
-    <header className="amz-header">
+    <header className="amz-header" style={{ justifyContent: 'space-between', padding: '16px 40px' }}>
       {/* Brand Logo */}
-      <Link to="/" className="amz-logo">
-        <ShoppingBag size={28} color="#febd69" />
-        B-MART<span>.in</span>
+      <Link to="/" className="amz-logo" style={{ letterSpacing: '2px', fontWeight: '900', fontSize: '1.4rem' }}>
+        B-MART
       </Link>
 
-      {/* Deliver To Location */}
-      <div className="amz-location" title="Deliver to India">
-        <MapPin size={18} color="#febd69" />
-        <div>
-          <div style={{ fontSize: '0.75rem' }}>Deliver to</div>
-          <div className="amz-location-bold">India</div>
-        </div>
+      {/* Centered Navigation Links (Reference style) */}
+      <div className="nav-center-links" style={{ display: 'flex', gap: '24px', fontSize: '0.9rem', fontWeight: '600' }}>
+        <Link to="/" style={{ color: 'var(--text-dark)' }}>Home</Link>
+        <Link to="/products" style={{ color: 'var(--text-dark)' }}>Shop</Link>
+        <Link to="/wishlist" style={{ color: 'var(--text-dark)' }}>Wishlist</Link>
+        <Link to={user?.role === 'ROLE_SELLER' || isAdmin ? '/seller/products' : '/seller/apply'} style={{ color: 'var(--text-dark)' }}>
+          {user?.role === 'ROLE_SELLER' ? 'Seller Hub' : 'Sell on B-MART'}
+        </Link>
       </div>
 
-      {/* Amazon-style Search Bar */}
-      <form onSubmit={handleSearch} className="amz-search-bar">
-        <select 
-          className="amz-search-select"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="">All Categories</option>
-          {categories.map(c => (
-            <option key={c.categoryId} value={c.categoryId}>{c.categoryName}</option>
-          ))}
-        </select>
-
-        <input
-          type="text"
-          className="amz-search-input"
-          placeholder="Search B-MART for backpacks, handbags, luggage & wallets..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-
-        <button type="submit" className="amz-search-btn" title="Search">
-          <Search size={20} color="#111" />
-        </button>
-      </form>
-
-      {/* Navigation Actions */}
-      <div className="amz-nav-actions">
-        {/* Admin Portal link for Admins */}
-        {isAdmin && (
-          <Link to="/admin" className="amz-nav-item" title="Admin Portal">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#febd69' }}>
-              <ShieldCheck size={18} />
-              <span className="amz-nav-bold">Admin Portal</span>
-            </div>
-          </Link>
-        )}
-
-        {/* Sell on B-MART / Seller Hub Link */}
-        <Link to={user?.role === 'ROLE_SELLER' || isAdmin ? '/seller/products' : '/seller/apply'} className="amz-nav-item" title="Seller Hub">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Store size={18} color="#febd69" />
-            <span className="amz-nav-bold">{user?.role === 'ROLE_SELLER' ? 'Seller Hub' : 'Sell on B-MART'}</span>
-          </div>
-        </Link>
-
-        {/* Wishlist Link */}
-        <Link to="/wishlist" className="amz-nav-item" title="Wishlist">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Heart size={18} color="#febd69" />
-            <span className="amz-nav-bold">Wishlist</span>
-          </div>
-        </Link>
+      {/* Right-aligned items */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Slim Search Bar */}
+        <form onSubmit={handleSearch} className="amz-search-bar" style={{ maxWidth: '240px', height: '34px', borderRadius: '20px' }}>
+          <input
+            type="text"
+            className="amz-search-input"
+            placeholder="Search bags..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ padding: '0 12px', fontSize: '0.8rem' }}
+          />
+          <button type="submit" className="amz-search-btn" title="Search" style={{ width: '34px' }}>
+            <Search size={16} />
+          </button>
+        </form>
 
         {/* Notifications */}
         {isAuthenticated && (
           <Link to="/profile?tab=notifications" className="amz-nav-item" title="Notifications">
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Bell size={18} color="#febd69" />
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <Bell size={18} />
               {unreadNotifications > 0 && (
                 <span style={{
                   position: 'absolute', top: -6, right: -6,
-                  background: '#f08804', color: 'white', fontSize: '0.65rem',
-                  fontWeight: '800', borderRadius: '50%', padding: '2px 5px'
+                  background: 'var(--text-dark)', color: 'var(--card-bg)', fontSize: '0.6rem',
+                  fontWeight: '800', borderRadius: '50%', padding: '1px 4px'
                 }}>
                   {unreadNotifications}
                 </span>
               )}
-              <span className="amz-nav-bold">Alerts</span>
             </div>
           </Link>
         )}
 
-        {/* Account & Lists Dropdown */}
+        {/* Account Menu */}
         <div 
           className="amz-nav-item" 
           onMouseEnter={() => setShowAccountMenu(true)}
           onMouseLeave={() => setShowAccountMenu(false)}
+          style={{ position: 'relative', cursor: 'pointer' }}
         >
-          <span>Hello, {isAuthenticated ? user?.fullName || user?.username : 'sign in'}</span>
-          <div className="amz-nav-bold" style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-            Account & Lists
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <User size={18} />
           </div>
 
           {showAccountMenu && (
             <div style={{
               position: 'absolute', top: '100%', right: 0, width: '220px',
-              background: 'white', color: '#111', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-              borderRadius: '8px', padding: '12px', zIndex: 1000, marginTop: '2px'
+              background: 'var(--card-bg)', color: 'var(--text-dark)', border: '1px solid var(--border-color)',
+              boxShadow: 'var(--shadow-md)',
+              borderRadius: '8px', padding: '12px', zIndex: 1000, marginTop: '8px'
             }}>
               {isAuthenticated ? (
                 <>
-                  <div style={{ fontWeight: '700', marginBottom: '8px', borderBottom: '1px solid #eee', pb: '6px' }}>
+                  <div style={{ fontWeight: '700', marginBottom: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
                     {user?.fullName || user?.username}
                   </div>
                   {isAdmin && (
-                    <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: '#007185', fontWeight: '700' }}>
-                      <ShieldCheck size={16} /> Admin Control Portal
+                    <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)', fontWeight: '700' }}>
+                      <ShieldCheck size={16} /> Admin Portal
                     </Link>
                   )}
-                  <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: '#333' }}>
+                  <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
                     <User size={16} /> Your Profile
                   </Link>
-                  <Link to="/profile?tab=orders" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: '#333' }}>
+                  <Link to="/profile?tab=orders" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
                     <Package size={16} /> Your Orders
                   </Link>
-                  <Link to={user?.role === 'ROLE_SELLER' || isAdmin ? '/seller/products' : '/seller/apply'} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: '#333' }}>
-                    <Store size={16} /> {user?.role === 'ROLE_SELLER' || isAdmin ? 'Seller Dashboard' : 'Become a Seller'}
+                  <Link to={user?.role === 'ROLE_SELLER' || isAdmin ? '/seller/products' : '/seller/apply'} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                    <Store size={16} /> Seller Hub
                   </Link>
                   <button 
                     onClick={handleLogout}
@@ -192,11 +165,11 @@ export default function Navbar() {
                 </>
               ) : (
                 <div style={{ textAlign: 'center' }}>
-                  <Link to="/login" className="btn-primary" style={{ display: 'block', textDecoration: 'none', marginBottom: '8px' }}>
+                  <Link to="/login" className="btn-primary" style={{ display: 'block', textDecoration: 'none', marginBottom: '8px', marginTop: 0 }}>
                     Sign In
                   </Link>
-                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                    New customer? <Link to="/register" style={{ color: '#007185', fontWeight: '600' }}>Start here.</Link>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    New customer? <Link to="/register" style={{ color: 'var(--text-dark)', fontWeight: '600' }}>Start here.</Link>
                   </div>
                 </div>
               )}
@@ -204,11 +177,27 @@ export default function Navbar() {
           )}
         </div>
 
+        {/* Dark Mode Toggle */}
+        <button 
+          onClick={toggleTheme}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-dark)'
+          }}
+          title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+        >
+          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
+
         {/* Cart */}
-        <Link to="/cart" className="amz-nav-item amz-cart-btn">
-          <ShoppingBag size={28} color="#white" />
+        <Link to="/cart" className="amz-nav-item amz-cart-btn" title="Cart">
+          <ShoppingBag size={18} />
           <span className="amz-cart-badge">{totalCount}</span>
-          <span className="amz-nav-bold" style={{ marginLeft: '12px' }}>Cart</span>
         </Link>
       </div>
     </header>
