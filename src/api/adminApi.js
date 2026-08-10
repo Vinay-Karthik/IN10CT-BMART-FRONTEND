@@ -28,5 +28,12 @@ export const adminApi = {
   processRefund: (id, reason) => axiosInstance.put(`/admin/orders/${id}/refund`, { reason }),
 
   // Platform Analytics (Phase 13)
-  getSiteAnalytics: () => axiosInstance.get('/admin/analytics/site')
+  getSiteAnalytics: () => axiosInstance.get('/admin/analytics/site'),
+  getAuditLogs: () => axiosInstance.get('/admin/audit-logs'),
+
+  // CRUD Controls (Phase 8 & 9 extension)
+  updateUser: (id, data) => axiosInstance.put(`/admin/users/${id}`, data),
+  getAllProducts: () => axiosInstance.get('/admin/products'),
+  updateProduct: (id, data) => axiosInstance.put(`/admin/products/${id}`, data),
+  deleteProduct: (id) => axiosInstance.delete(`/admin/products/${id}`)
 };

@@ -65,7 +65,7 @@ export default function SellerStorePage() {
             required
             style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
           />
-          <span style={{ fontSize: '0.75rem', color: '#777' }}>Public URL: http://localhost:3000/store/{storeSlug}</span>
+          <span style={{ fontSize: '0.75rem', color: '#777' }}>Public URL: {window.location.origin}/store/{storeSlug}</span>
         </div>
 
         <div style={{ marginBottom: '16px' }}>

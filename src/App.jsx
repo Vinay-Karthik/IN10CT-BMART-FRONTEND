@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Navbar from './components/Navbar';
 import CategoryBar from './components/CategoryBar';
 import Footer from './components/Footer';
@@ -12,11 +13,15 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import PaymentFailurePage from './pages/PaymentFailurePage';
+
+// Auth
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import OtpVerifyPage from './pages/OtpVerifyPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+
+// User Account
 import ProfilePage from './pages/ProfilePage';
 import WishlistPage from './pages/WishlistPage';
 
@@ -32,6 +37,13 @@ import SellerAnalyticsPage from './pages/seller/SellerAnalyticsPage';
 
 // Admin Dashboard Pages (Phases 8 - 14)
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+
+// Admin Route Guard
+function AdminRoute({ children }) {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const isAdmin = isAuthenticated && (user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN');
+  return isAdmin ? children : <Navigate to="/login" replace />;
+}
 
 export default function App() {
   return (
@@ -73,7 +85,14 @@ export default function App() {
           </Route>
 
           {/* Admin Portal (Phases 8 to 14) */}
-          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminDashboardPage />
+              </AdminRoute>
+            } 
+          />
         </Routes>
       </div>
 

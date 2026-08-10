@@ -117,12 +117,12 @@ export default function Navbar() {
 
         {/* Account Menu */}
         <div 
-          className="amz-nav-item" 
+          className="amz-nav-item amz-nav-dropdown-wrapper" 
           onMouseEnter={() => setShowAccountMenu(true)}
           onMouseLeave={() => setShowAccountMenu(false)}
           style={{ position: 'relative', cursor: 'pointer' }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div className="nav-icon-trigger" style={{ display: 'flex', alignItems: 'center', gap: '4px', transition: 'opacity 0.2s' }}>
             <User size={18} />
           </div>
 
