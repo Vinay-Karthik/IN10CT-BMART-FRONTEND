@@ -161,10 +161,10 @@ export default function ProductListingPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
             {(categories.length >= 4 ? categories.slice(0, 4) : [
-              { categoryId: 1, categoryName: 'Handbags & Purses' },
-              { categoryId: 2, categoryName: 'Backpacks & Travel' },
-              { categoryId: 3, categoryName: 'Tech & Laptop Bags' },
-              { categoryId: 4, categoryName: 'Fashion Accessories' }
+              { categoryId: 1, categoryName: 'Backpacks' },
+              { categoryId: 2, categoryName: 'Handbags' },
+              { categoryId: 3, categoryName: 'Travel Bags' },
+              { categoryId: 4, categoryName: 'Wallets' }
             ]).map((cat, idx) => {
               const isSelected = String(categoryIdParam) === String(cat.categoryId);
               return (
