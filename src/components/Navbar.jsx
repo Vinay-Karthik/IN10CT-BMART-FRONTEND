@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ShoppingBag, Search, MapPin, User, Heart, Bell, LogOut, Package, Store, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { ShoppingBag, Search, MapPin, User, Heart, Bell, LogOut, Package, ShieldCheck, Sun, Moon } from 'lucide-react';
 import { logout } from '../store/slices/authSlice';
+import { authApi } from '../api/authApi';
 import { cartApi, notificationApi } from '../api/shopApi';
 import { productApi } from '../api/productApi';
 import { setCart } from '../store/slices/cartSlice';
@@ -19,6 +20,19 @@ export default function Navbar() {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const accountMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
+        setShowAccountMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -56,9 +70,15 @@ export default function Navbar() {
     navigate(url);
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch (e) {
+      // safe fallback
+    } finally {
+      dispatch(logout());
+      navigate('/login');
+    }
   };
 
   const isAdmin = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN';
@@ -75,9 +95,6 @@ export default function Navbar() {
         <Link to="/" style={{ color: 'var(--text-dark)' }}>Home</Link>
         <Link to="/products" style={{ color: 'var(--text-dark)' }}>Shop</Link>
         <Link to="/wishlist" style={{ color: 'var(--text-dark)' }}>Wishlist</Link>
-        <Link to={user?.role === 'ROLE_SELLER' || isAdmin ? '/seller/products' : '/seller/apply'} style={{ color: 'var(--text-dark)' }}>
-          {user?.role === 'ROLE_SELLER' ? 'Seller Hub' : 'Sell on B-MART'}
-        </Link>
       </div>
 
       {/* Right-aligned items */}
@@ -117,62 +134,69 @@ export default function Navbar() {
 
         {/* Account Menu */}
         <div 
+          ref={accountMenuRef}
           className="amz-nav-item" 
-          onMouseEnter={() => setShowAccountMenu(true)}
-          onMouseLeave={() => setShowAccountMenu(false)}
           style={{ position: 'relative', cursor: 'pointer' }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div 
+            onClick={() => setShowAccountMenu(prev => !prev)}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px' }}
+            title="Account Menu"
+          >
             <User size={18} />
           </div>
 
           {showAccountMenu && (
             <div style={{
               position: 'absolute', top: '100%', right: 0, width: '220px',
-              background: 'var(--card-bg)', color: 'var(--text-dark)', border: '1px solid var(--border-color)',
-              boxShadow: 'var(--shadow-md)',
-              borderRadius: '8px', padding: '12px', zIndex: 1000, marginTop: '8px'
+              paddingTop: '8px', zIndex: 1000
             }}>
-              {isAuthenticated ? (
-                <>
-                  <div style={{ fontWeight: '700', marginBottom: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
-                    {user?.fullName || user?.username}
-                  </div>
-                  {isAdmin && (
-                    <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)', fontWeight: '700' }}>
-                      <ShieldCheck size={16} /> Admin Portal
+              <div style={{
+                background: 'var(--card-bg)', color: 'var(--text-dark)', border: '1px solid var(--border-color)',
+                boxShadow: 'var(--shadow-md)',
+                borderRadius: '8px', padding: '12px'
+              }}>
+                {isAuthenticated ? (
+                  <>
+                    <div style={{ fontWeight: '700', marginBottom: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
+                      {user?.fullName || user?.username}
+                    </div>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setShowAccountMenu(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)', fontWeight: '700' }}>
+                        <ShieldCheck size={16} /> Admin Portal
+                      </Link>
+                    )}
+                    <Link to="/profile" onClick={() => setShowAccountMenu(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                      <User size={16} /> Your Profile
                     </Link>
-                  )}
-                  <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
-                    <User size={16} /> Your Profile
-                  </Link>
-                  <Link to="/profile?tab=orders" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
-                    <Package size={16} /> Your Orders
-                  </Link>
-                  <Link to={user?.role === 'ROLE_SELLER' || isAdmin ? '/seller/products' : '/seller/apply'} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
-                    <Store size={16} /> Seller Hub
-                  </Link>
-                  <button 
-                    onClick={handleLogout}
-                    style={{
-                      width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
-                      padding: '8px 0', fontSize: '0.9rem', color: '#e53e3e',
-                      background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left'
-                    }}
-                  >
-                    <LogOut size={16} /> Sign Out
-                  </button>
-                </>
-              ) : (
-                <div style={{ textAlign: 'center' }}>
-                  <Link to="/login" className="btn-primary" style={{ display: 'block', textDecoration: 'none', marginBottom: '8px', marginTop: 0 }}>
-                    Sign In
-                  </Link>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    New customer? <Link to="/register" style={{ color: 'var(--text-dark)', fontWeight: '600' }}>Start here.</Link>
+                    <Link to="/profile?tab=orders" onClick={() => setShowAccountMenu(false)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', fontSize: '0.9rem', color: 'var(--text-dark)' }}>
+                      <Package size={16} /> Your Orders
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        setShowAccountMenu(false);
+                        handleLogout();
+                      }}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
+                        padding: '8px 0', fontSize: '0.9rem', color: '#e53e3e',
+                        background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left'
+                      }}
+                    >
+                      <LogOut size={16} /> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center' }}>
+                    <Link to="/login" onClick={() => setShowAccountMenu(false)} className="btn-primary" style={{ display: 'block', textDecoration: 'none', marginBottom: '8px', marginTop: 0 }}>
+                      Sign In
+                    </Link>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      New customer? <Link to="/register" onClick={() => setShowAccountMenu(false)} style={{ color: 'var(--text-dark)', fontWeight: '600' }}>Start here.</Link>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -194,9 +218,8 @@ export default function Navbar() {
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
         </button>
 
-        {/* Cart */}
         <Link to="/cart" className="amz-nav-item amz-cart-btn" title="Cart">
-          <ShoppingBag size={18} />
+          <ShoppingBag size={20} />
           <span className="amz-cart-badge">{totalCount}</span>
         </Link>
       </div>

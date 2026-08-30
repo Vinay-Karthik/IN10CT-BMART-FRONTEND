@@ -1,8 +1,11 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from './store/slices/authSlice';
 import Navbar from './components/Navbar';
 import CategoryBar from './components/CategoryBar';
 import Footer from './components/Footer';
+import ChatbotWidget from './components/ChatbotWidget';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -20,24 +23,65 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import WishlistPage from './pages/WishlistPage';
 
-// Seller Dashboard Pages (Phases 1 - 7)
-import SellerApplyPage from './pages/seller/SellerApplyPage';
-import SellerDashboardLayout from './pages/seller/SellerDashboardLayout';
-import SellerProductsPage from './pages/seller/SellerProductsPage';
-import SellerOrdersPage from './pages/seller/SellerOrdersPage';
-import SellerStorePage from './pages/seller/SellerStorePage';
-import SellerEarningsPage from './pages/seller/SellerEarningsPage';
-import SellerReviewsPage from './pages/seller/SellerReviewsPage';
-import SellerAnalyticsPage from './pages/seller/SellerAnalyticsPage';
-
 // Admin Dashboard Pages (Phases 8 - 14)
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+
+function ProtectedRoute({ children, adminOnly = false }) {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  if (!isAuthenticated || !user) {
+    return <Navigate to={adminOnly ? "/admin" : "/login"} replace />;
+  }
+  if (adminOnly && user?.role !== 'ROLE_ADMIN' && user?.role !== 'ADMIN') {
+    return <Navigate to="/admin" replace />;
+  }
+  return children;
+}
+
+function AdminPortalRoute() {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const isAdmin = isAuthenticated && user && (user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN');
+
+  if (isAdmin) {
+    return <AdminDashboardPage />;
+  }
+  return <AdminLoginPage />;
+}
+
+function CustomerOnlyRoute({ children }) {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  if (isAuthenticated && user && (user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN')) {
+    return <Navigate to="/admin" replace />;
+  }
+  return children;
+}
 
 export default function App() {
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminUser = isAuthenticated && user && (user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN');
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      dispatch(logout());
+    };
+    window.addEventListener('bmart_unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('bmart_unauthorized', handleUnauthorized);
+  }, [dispatch]);
+
+  // Restrict Admin users from accessing customer/storefront features
+  if (!isAdminRoute && isAdminUser) {
+    return <Navigate to="/admin" replace />;
+  }
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar />
-      <CategoryBar />
+      {/* Hide Storefront Navigation headers on Admin routes */}
+      {!isAdminRoute && <Navbar />}
+      {!isAdminRoute && <CategoryBar />}
 
       <div style={{ flex: 1 }}>
         <Routes>
@@ -45,7 +89,7 @@ export default function App() {
           <Route path="/products" element={<ProductListingPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
           <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
           <Route path="/payment-failure" element={<PaymentFailurePage />} />
 
@@ -57,27 +101,18 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* User Account */}
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
 
-          {/* Seller Ecosystem (Phases 1 to 7) */}
-          <Route path="/seller/apply" element={<SellerApplyPage />} />
-          <Route path="/seller" element={<SellerDashboardLayout />}>
-            <Route index element={<Navigate to="/seller/products" replace />} />
-            <Route path="products" element={<SellerProductsPage />} />
-            <Route path="orders" element={<SellerOrdersPage />} />
-            <Route path="store" element={<SellerStorePage />} />
-            <Route path="earnings" element={<SellerEarningsPage />} />
-            <Route path="reviews" element={<SellerReviewsPage />} />
-            <Route path="analytics" element={<SellerAnalyticsPage />} />
-          </Route>
-
-          {/* Admin Portal (Phases 8 to 14) */}
-          <Route path="/admin" element={<AdminDashboardPage />} />
+          {/* Admin Portal */}
+          <Route path="/admin" element={<AdminPortalRoute />} />
+          <Route path="/admin/login" element={<Navigate to="/admin" replace />} />
         </Routes>
       </div>
 
-      <Footer />
+      {!isAdminRoute && <ChatbotWidget />}
+
+      {!isAdminRoute && <Footer />}
     </div>
   );
 }

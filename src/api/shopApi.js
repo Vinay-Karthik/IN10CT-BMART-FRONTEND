@@ -16,6 +16,13 @@ export const orderApi = {
   getRazorpayKey: () => axiosInstance.get('/payments/key'),
 };
 
+export const paymentApi = {
+  getKey: () => axiosInstance.get('/payments/key'),
+  verifyPayment: (data) => axiosInstance.post('/payments/verify', data),
+  getPaymentByOrderId: (orderId) => axiosInstance.get(`/payments/order/${orderId}`),
+  markPaymentFailed: (orderId, reason) => axiosInstance.post('/payments/fail', { orderId, reason }),
+};
+
 export const userApi = {
   getProfile: () => axiosInstance.get('/users/profile'),
   updateProfile: (data) => axiosInstance.put('/users/profile', data),
@@ -36,6 +43,8 @@ export const reviewApi = {
 export const notificationApi = {
   getNotifications: () => axiosInstance.get('/notifications'),
   markAsRead: (id) => axiosInstance.put(`/notifications/${id}/read`),
+  markAllAsRead: () => axiosInstance.put('/notifications/read-all'),
+  deleteNotification: (id) => axiosInstance.delete(`/notifications/${id}`),
   getUnreadCount: () => axiosInstance.get('/notifications/unread-count'),
 };
 

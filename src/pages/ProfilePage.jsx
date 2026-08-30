@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { userApi, orderApi, notificationApi } from '../api/shopApi';
 import { updateUser } from '../store/slices/authSlice';
-import { User, MapPin, Package, Bell, KeyRound, CheckCircle, Phone, Mail, ShieldCheck, Edit3 } from 'lucide-react';
+import { User, MapPin, Package, Bell, KeyRound, CheckCircle, Phone, Mail, ShieldCheck, Edit3, Download, FileText, Eye, EyeOff, CheckCircle2, AlertCircle, AlertTriangle, Trash2, CheckCheck, ArrowRight, Filter } from 'lucide-react';
+import InvoiceModal from '../components/InvoiceModal';
 
 export default function ProfilePage() {
   const [searchParams] = useSearchParams();
@@ -26,15 +27,19 @@ export default function ProfilePage() {
   // Password Form state
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [passMsg, setPassMsg] = useState('');
   const [passError, setPassError] = useState('');
 
-  // Orders
+  // Orders & Invoice state
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
 
   // Notifications
   const [notifications, setNotifications] = useState([]);
+  const [notifFilter, setNotifFilter] = useState('all'); // 'all', 'unread', 'read'
 
   // Fetch full live profile from backend on load
   useEffect(() => {
@@ -111,6 +116,18 @@ export default function ProfilePage() {
     });
   };
 
+  const markAllNotificationsRead = () => {
+    notificationApi.markAllAsRead().then(() => {
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
+    }).catch(err => console.error(err));
+  };
+
+  const deleteNotificationItem = (id) => {
+    notificationApi.deleteNotification(id).then(() => {
+      setNotifications(notifications.filter(n => n.notificationId !== id));
+    }).catch(err => console.error(err));
+  };
+
   const renderStatusPipeline = (status) => {
     const steps = ['PLACED', 'CONFIRMED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
     const currentIdx = steps.indexOf(status);
@@ -120,9 +137,9 @@ export default function ProfilePage() {
         {/* Background Track Line */}
         <div style={{
           position: 'absolute',
-          top: '16px', // Center vertically matching the 32px height circle's radius
-          left: '10%', // Offset starting at the center of the first column
-          right: '10%', // Offset ending at the center of the last column
+          top: '16px',
+          left: '10%',
+          right: '10%',
           height: '4px',
           background: '#e0e0e0',
           zIndex: 0
@@ -133,7 +150,7 @@ export default function ProfilePage() {
           position: 'absolute',
           top: '16px',
           left: '10%',
-          width: `${(currentIdx / (steps.length - 1)) * 80}%`, // Dynamically scale matching columns
+          width: `${(currentIdx / (steps.length - 1)) * 80}%`,
           height: '4px',
           background: '#2e7d32',
           zIndex: 0,
@@ -337,24 +354,68 @@ export default function ProfilePage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                   <div>
                     <label style={{ fontWeight: '600', fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Current Password</label>
-                    <input
-                      type="password"
-                      value={oldPassword}
-                      onChange={(e) => setOldPassword(e.target.value)}
-                      required
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showOldPassword ? "text" : "password"}
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        required
+                        style={{ width: '100%', padding: '10px 40px 10px 10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOldPassword(!showOldPassword)}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: 'var(--text-muted)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '4px'
+                        }}
+                        title={showOldPassword ? "Hide password" : "Show password"}
+                      >
+                        {showOldPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label style={{ fontWeight: '600', fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>New Password (Min 6 chars)</label>
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        style={{ width: '100%', padding: '10px 40px 10px 10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--input-bg)', color: 'var(--text-dark)' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: 'var(--text-muted)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '4px'
+                        }}
+                        title={showNewPassword ? "Hide password" : "Show password"}
+                      >
+                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <button type="submit" className="btn-primary" style={{ width: 'auto', padding: '10px 24px' }}>Update Password</button>
@@ -374,16 +435,36 @@ export default function ProfilePage() {
             ) : (
               orders.map(o => (
                 <div key={o.orderId} style={{ border: '1px solid var(--border-color)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', pb: '12px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', marginBottom: '16px' }}>
                     <div>
                       <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>Order #{o.orderId}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Placed on: {new Date(o.createdAt).toLocaleDateString()}</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Placed on: {new Date(o.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: '800', fontSize: '1.2rem' }}>₹{o.totalAmount}</div>
-                      <span style={{ background: '#e3f2fd', color: '#0d47a1', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '700' }}>
-                        {o.status}
-                      </span>
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                      <div style={{ fontWeight: '800', fontSize: '1.2rem' }}>₹{Number(o.totalAmount).toLocaleString('en-IN')}</div>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span style={{ background: '#e3f2fd', color: '#0d47a1', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '700' }}>
+                          {o.status}
+                        </span>
+                        <button
+                          onClick={() => setSelectedInvoiceOrder(o)}
+                          style={{
+                            background: '#2563eb',
+                            color: 'white',
+                            border: 'none',
+                            padding: '4px 12px',
+                            borderRadius: '8px',
+                            fontSize: '0.8rem',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <Download size={14} /> Download Invoice
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -400,7 +481,7 @@ export default function ProfilePage() {
                           <span style={{ fontWeight: '600' }}>{item.product.name}</span>
                           <span style={{ color: 'var(--text-muted)', marginLeft: '8px' }}>x {item.quantity}</span>
                         </div>
-                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>₹{item.totalPrice}</div>
+                        <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>₹{Number(item.totalPrice).toLocaleString('en-IN')}</div>
                       </div>
                     ))}
                   </div>
@@ -412,38 +493,231 @@ export default function ProfilePage() {
 
         {activeTab === 'notifications' && (
           <div style={{ background: 'var(--card-bg)', color: 'var(--text-dark)', padding: '30px', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '20px' }}>In-App Notifications</h2>
-            {notifications.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)' }}>No notifications found.</p>
-            ) : (
-              notifications.map(n => (
-                <div 
-                  key={n.notificationId} 
+            {/* Header Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Bell size={24} color="#f08804" />
+                  <span>In-App Notifications</span>
+                  {notifications.filter(n => !n.read).length > 0 && (
+                    <span style={{ background: '#ef4444', color: '#ffffff', fontSize: '0.75rem', fontWeight: '800', padding: '2px 8px', borderRadius: '12px' }}>
+                      {notifications.filter(n => !n.read).length} UNREAD
+                    </span>
+                  )}
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '4px', margin: 0 }}>
+                  Stay updated on your orders, payment confirmations, and account activity.
+                </p>
+              </div>
+
+              {notifications.some(n => !n.read) && (
+                <button
+                  onClick={markAllNotificationsRead}
                   style={{
-                    padding: '16px', borderRadius: '10px', marginBottom: '12px',
-                    background: n.read ? 'var(--body-bg)' : 'rgba(240, 136, 4, 0.15)', border: '1px solid var(--border-color)',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                    background: 'rgba(0, 113, 133, 0.1)',
+                    color: '#007185',
+                    border: '1px solid #007185',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  <div>
-                    <h4 style={{ fontWeight: '700', fontSize: '0.95rem' }}>{n.title}</h4>
-                    <p style={{ color: 'var(--text-dark)', fontSize: '0.85rem', marginTop: '4px' }}>{n.message}</p>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(n.createdAt).toLocaleString()}</span>
+                  <CheckCheck size={16} /> Mark All as Read
+                </button>
+              )}
+            </div>
+
+            {/* Filter Pills */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              {['all', 'unread', 'read'].map(filterKey => {
+                const count = filterKey === 'all'
+                  ? notifications.length
+                  : filterKey === 'unread'
+                  ? notifications.filter(n => !n.read).length
+                  : notifications.filter(n => n.read).length;
+
+                return (
+                  <button
+                    key={filterKey}
+                    onClick={() => setNotifFilter(filterKey)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '20px',
+                      border: '1px solid var(--border-color)',
+                      background: notifFilter === filterKey ? 'var(--text-dark)' : 'var(--body-bg)',
+                      color: notifFilter === filterKey ? 'var(--card-bg)' : 'var(--text-dark)',
+                      fontWeight: '700',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      textTransform: 'capitalize',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>{filterKey}</span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.85, background: 'rgba(255,255,255,0.2)', padding: '1px 6px', borderRadius: '10px' }}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Notifications List */}
+            {(() => {
+              const filteredList = notifications.filter(n => {
+                if (notifFilter === 'unread') return !n.read;
+                if (notifFilter === 'read') return n.read;
+                return true;
+              });
+
+              if (filteredList.length === 0) {
+                return (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', background: 'var(--body-bg)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                    <Bell size={40} color="var(--text-muted)" style={{ opacity: 0.5, marginBottom: '10px' }} />
+                    <p style={{ color: 'var(--text-muted)', fontWeight: '600', margin: 0 }}>
+                      No {notifFilter !== 'all' ? notifFilter : ''} notifications found.
+                    </p>
                   </div>
-                  {!n.read && (
-                    <button
-                      onClick={() => markNotificationRead(n.notificationId)}
-                      style={{ background: '#007185', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', cursor: 'cursor' }}
-                    >
-                      Mark Read
-                    </button>
-                  )}
+                );
+              }
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {filteredList.map(n => {
+                    const isSuccess = n.title?.toLowerCase().includes('success') || n.title?.toLowerCase().includes('confirmed');
+                    const isFailed = n.title?.toLowerCase().includes('fail') || n.title?.toLowerCase().includes('cancel');
+
+                    return (
+                      <div
+                        key={n.notificationId}
+                        style={{
+                          padding: '16px 20px',
+                          borderRadius: '12px',
+                          background: n.read ? 'var(--body-bg)' : 'rgba(240, 136, 4, 0.08)',
+                          border: `1px solid ${n.read ? 'var(--border-color)' : '#f08804'}`,
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '16px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {/* Icon */}
+                        <div style={{
+                          padding: '10px',
+                          borderRadius: '10px',
+                          background: isSuccess ? 'rgba(34, 197, 94, 0.15)' : isFailed ? 'rgba(239, 68, 68, 0.15)' : 'rgba(240, 136, 4, 0.15)',
+                          flexShrink: 0,
+                          marginTop: '2px'
+                        }}>
+                          {isSuccess ? (
+                            <CheckCircle2 size={20} color="#22c55e" />
+                          ) : isFailed ? (
+                            <AlertCircle size={20} color="#ef4444" />
+                          ) : (
+                            <Bell size={20} color="#f08804" />
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                            <h4 style={{ fontWeight: '700', fontSize: '0.95rem', color: 'var(--text-dark)', margin: 0 }}>
+                              {n.title}
+                            </h4>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              {new Date(n.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+
+                          <p style={{ color: 'var(--text-dark)', fontSize: '0.85rem', marginTop: '6px', marginBottom: '8px', lineHeight: '1.4' }}>
+                            {n.message}
+                          </p>
+
+                          {/* Quick Action Link if message contains Order ID */}
+                          {n.message?.includes('#ORD-') && (
+                            <button
+                              onClick={() => setActiveTab('orders')}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#007185',
+                                fontWeight: '700',
+                                fontSize: '0.8rem',
+                                padding: 0,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                marginTop: '4px'
+                              }}
+                            >
+                              <Package size={14} /> View Order Details <ArrowRight size={12} />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                          {!n.read && (
+                            <button
+                              onClick={() => markNotificationRead(n.notificationId)}
+                              style={{
+                                background: '#007185',
+                                color: 'white',
+                                border: 'none',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                fontSize: '0.78rem',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              Mark Read
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => deleteNotificationItem(n.notificationId)}
+                            title="Delete notification"
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--text-muted)',
+                              padding: '6px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))
-            )}
+              );
+            })()}
           </div>
         )}
       </div>
+
+      {/* Invoice Modal for Selected Order in Order History */}
+      {selectedInvoiceOrder && (
+        <InvoiceModal order={selectedInvoiceOrder} onClose={() => setSelectedInvoiceOrder(null)} />
+      )}
     </div>
   );
 }

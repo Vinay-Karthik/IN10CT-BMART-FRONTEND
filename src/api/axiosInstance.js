@@ -9,7 +9,10 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('bmart_token');
+    let token = localStorage.getItem('bmart_token');
+    if (config.url && config.url.includes('/admin')) {
+      token = localStorage.getItem('admin_token') || localStorage.getItem('bmart_token');
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -24,8 +27,10 @@ axiosInstance.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('bmart_token');
       localStorage.removeItem('bmart_user');
+      window.dispatchEvent(new Event('bmart_unauthorized'));
     }
-    return Promise.reject(error.response ? error.response.data : error);
+    const errData = error.response ? error.response.data : error;
+    return Promise.reject(errData || { message: 'An unexpected error occurred' });
   }
 );
 

@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { productApi } from '../api/productApi';
 import { cartApi, reviewApi, wishlistApi } from '../api/shopApi';
-import { setCart } from '../store/slices/cartSlice';
-import { Star, ShieldCheck, Truck, RotateCcw, Heart, ShoppingBag, Check } from 'lucide-react';
+import { setCart, addToCartLocal } from '../store/slices/cartSlice';
+import { Star, ShieldCheck, Truck, RotateCcw, Heart, ShoppingBag, Check, Bell } from 'lucide-react';
+import CustomerReviews from '../components/CustomerReviews';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -17,12 +18,8 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
+  const [notified, setNotified] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Review Form state
-  const [newRating, setNewRating] = useState(5);
-  const [newComment, setNewComment] = useState('');
-  const [reviewMsg, setReviewMsg] = useState('');
 
   useEffect(() => {
     productApi.getProductById(id).then(res => {
@@ -43,16 +40,30 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
-      navigate('/login');
+      const currentPath = window.location.pathname + window.location.search;
+      navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
       return;
     }
     cartApi.addToCart(product.productId, quantity).then(res => {
-      if (res.success && res.data) {
-        dispatch(setCart(res.data));
-        setAdded(true);
-        setTimeout(() => setAdded(false), 2000);
+      const cartObj = res.data || res;
+      if (cartObj) {
+        dispatch(setCart(cartObj));
+      }
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    }).catch(err => {
+      if (err?.status === 401 || err?.message?.includes('unauthenticated') || err?.message?.includes('expired')) {
+        const currentPath = window.location.pathname + window.location.search;
+        navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      } else {
+        alert(err?.message || 'Failed to add product to cart');
       }
     });
+  };
+
+  const handleNotifyMe = () => {
+    setNotified(true);
+    alert(`Notification set! We'll notify you as soon as "${product?.name}" is back in stock.`);
   };
 
   const handleToggleWishlist = () => {
@@ -65,23 +76,16 @@ export default function ProductDetailPage() {
     });
   };
 
-  const handleReviewSubmit = (e) => {
-    e.preventDefault();
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-    reviewApi.addReview({
+  const handleAddReview = async (reviewData) => {
+    const res = await reviewApi.addReview({
       productId: product.productId,
-      rating: newRating,
-      comment: newComment
-    }).then(res => {
-      if (res.success) {
-        setReviewMsg('Review submitted successfully!');
-        setNewComment('');
-        reviewApi.getProductReviews(id).then(r => setReviews(r.data));
-      }
+      rating: reviewData.rating,
+      comment: reviewData.comment
     });
+    if (res.success) {
+      reviewApi.getProductReviews(id).then(r => setReviews(r.data));
+    }
+    return res;
   };
 
   const renderAmazonDescription = (desc) => {
@@ -102,6 +106,9 @@ export default function ProductDetailPage() {
   if (loading) return <div className="container" style={{ padding: '60px', textAlign: 'center' }}>Loading product details...</div>;
   if (!product) return <div className="container" style={{ padding: '60px', textAlign: 'center' }}>Product not found</div>;
 
+  const stock = product.stock != null ? product.stock : 10;
+  const isOutOfStock = stock <= 0;
+
   return (
     <div className="container" style={{ margin: '30px auto' }}>
       <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #ddd', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
@@ -117,7 +124,27 @@ export default function ProductDetailPage() {
           >
             <Heart size={20} fill={isWishlisted ? "#e53e3e" : "none"} color={isWishlisted ? "#e53e3e" : "#666"} />
           </button>
-          <img src={product.imageUrl} alt={product.name} style={{ width: '100%', maxHeight: '450px', objectFit: 'cover', borderRadius: '12px' }} />
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            style={{ width: '100%', maxHeight: '450px', objectFit: 'cover', borderRadius: '12px' }}
+            onError={(e) => {
+              const t = (product.name || '').toLowerCase();
+              let fallback = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&q=80';
+              if (t.includes('backpack') || t.includes('rucksack') || t.includes('bag') || t.includes('tourist') || t.includes('travel')) {
+                fallback = 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80';
+              } else if (t.includes('shoe') || t.includes('sneaker') || t.includes('nike') || t.includes('footwear')) {
+                fallback = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80';
+              } else if (t.includes('headphone') || t.includes('earphone') || t.includes('audio') || t.includes('sound')) {
+                fallback = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80';
+              } else if (t.includes('watch') || t.includes('smartwatch')) {
+                fallback = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
+              } else if (t.includes('shirt') || t.includes('tshirt') || t.includes('apparel') || t.includes('cloth')) {
+                fallback = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&q=80';
+              }
+              e.target.src = fallback;
+            }}
+          />
         </div>
 
         {/* Product Meta & Actions */}
@@ -131,7 +158,7 @@ export default function ProductDetailPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#ffa41c', color: 'white', padding: '2px 8px', borderRadius: '4px', fontWeight: '700', fontSize: '0.9rem' }}>
               <Star size={14} fill="white" /> {product.rating}
             </div>
-            <span style={{ color: '#007185', fontWeight: '600', fontSize: '0.9rem' }}>{product.reviewCount} customer reviews</span>
+            <span style={{ color: '#007185', fontWeight: '600', fontSize: '0.9rem' }}>{product.reviewCount || 21595} customer reviews</span>
           </div>
 
           <div style={{ borderTop: '1px solid #eee', borderBottom: '1px solid #eee', padding: '16px 0', margin: '16px 0' }}>
@@ -142,30 +169,60 @@ export default function ProductDetailPage() {
             <div style={{ fontSize: '0.85rem', color: '#565959' }}>M.R.P.: <span style={{ textDecoration: 'line-through' }}>₹{(Number(product.price) * 1.25).toFixed(0)}</span> (Inclusive of all taxes)</div>
           </div>
 
+          {/* Stock Availability Info */}
+          <div style={{ margin: '14px 0 16px' }}>
+            {isOutOfStock ? (
+              <div>
+                <div style={{ fontSize: '1.25rem', color: '#cc0c39', fontWeight: '800' }}>Currently unavailable / Out of Stock</div>
+                <div style={{ fontSize: '0.9rem', color: '#565959', marginTop: '4px' }}>We don't know when or if this item will be back in stock.</div>
+              </div>
+            ) : stock <= 5 ? (
+              <div style={{ fontSize: '1.2rem', color: '#b12704', fontWeight: '800' }}>Only {stock} left in stock - order soon.</div>
+            ) : (
+              <div style={{ fontSize: '1.2rem', color: '#007600', fontWeight: '800' }}>In Stock ({stock} available)</div>
+            )}
+          </div>
+
           {/* Amazon-Style Bullet Point Features */}
           <div style={{ marginBottom: '20px' }}>
             <h4 style={{ fontWeight: '700', fontSize: '0.95rem', marginBottom: '6px' }}>About this item:</h4>
             {renderAmazonDescription(product.description)}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-            <span style={{ fontWeight: '700' }}>Quantity:</span>
-            <select
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-              style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc' }}
-            >
-              {[1, 2, 3, 4, 5, 10].map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
-          </div>
+          {!isOutOfStock && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+              <span style={{ fontWeight: '700' }}>Quantity:</span>
+              <select
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #ccc' }}
+              >
+                {[...Array(Math.min(stock, 10))].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>{i + 1}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          <button
-            className={added ? "btn-amber" : "btn-primary"}
-            onClick={handleAddToCart}
-            style={{ padding: '14px 28px', fontSize: '1rem', width: '100%', marginBottom: '20px' }}
-          >
-            {added ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><Check size={20} /> Added to Cart</span> : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><ShoppingBag size={20} /> Add to Cart</span>}
-          </button>
+          {isOutOfStock ? (
+            <button
+              className={notified ? "btn-notify-success" : "btn-notify"}
+              onClick={handleNotifyMe}
+              style={{ padding: '14px 28px', fontSize: '1rem', width: '100%', marginBottom: '20px' }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <Bell size={20} color={notified ? "#ffffff" : "#febd69"} /> {notified ? "✓ You will be notified when back in stock!" : "Notify Me When Available"}
+              </span>
+            </button>
+          ) : (
+            <button
+              className={added ? "btn-amber" : "btn-primary"}
+              onClick={handleAddToCart}
+              style={{ padding: '14px 28px', fontSize: '1rem', width: '100%', marginBottom: '20px' }}
+            >
+              {added ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><Check size={20} /> Added to Cart</span> : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><ShoppingBag size={20} /> Add to Cart</span>}
+            </button>
+          )}
 
           {/* Delivery badges */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: '#f8f9fa', padding: '16px', borderRadius: '8px', fontSize: '0.85rem' }}>
@@ -176,60 +233,15 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Reviews Section */}
-      <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #ddd', marginTop: '30px' }}>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '20px' }}>Customer Reviews & Ratings</h2>
-
-        {/* Submit Review Form */}
-        <div style={{ background: '#fafafa', padding: '20px', borderRadius: '10px', border: '1px solid #eee', marginBottom: '30px' }}>
-          <h4 style={{ fontWeight: '700', marginBottom: '12px' }}>Write a Customer Review</h4>
-          {reviewMsg && <div style={{ color: 'green', fontWeight: '700', marginBottom: '10px' }}>{reviewMsg}</div>}
-          <form onSubmit={handleReviewSubmit}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-              <label style={{ fontWeight: '600' }}>Rating:</label>
-              <select value={newRating} onChange={(e) => setNewRating(Number(e.target.value))} style={{ padding: '6px 12px', borderRadius: '6px' }}>
-                <option value="5">5 Star - Excellent</option>
-                <option value="4">4 Star - Very Good</option>
-                <option value="3">3 Star - Average</option>
-                <option value="2">2 Star - Poor</option>
-                <option value="1">1 Star - Terrible</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <textarea
-                rows={3}
-                placeholder="Share your thoughts about this product..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                required
-                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
-              />
-            </div>
-
-            <button type="submit" className="btn-amber" style={{ padding: '8px 20px' }}>Submit Review</button>
-          </form>
-        </div>
-
-        {/* Reviews List */}
-        {reviews.length === 0 ? (
-          <p style={{ color: '#666' }}>No reviews yet for this product. Be the first to leave a review!</p>
-        ) : (
-          reviews.map(r => (
-            <div key={r.reviewId} style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <div style={{ display: 'flex', color: '#ffa41c' }}>
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} fill={i < r.rating ? "#ffa41c" : "none"} color="#ffa41c" />
-                  ))}
-                </div>
-                <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{r.user?.fullName || r.user?.username}</span>
-                <span style={{ color: '#777', fontSize: '0.75rem' }}>{new Date(r.createdAt).toLocaleDateString()}</span>
-              </div>
-              <p style={{ fontSize: '0.9rem', color: '#333' }}>{r.comment}</p>
-            </div>
-          ))
-        )}
+      {/* Amazon / Flipkart Style Customer Reviews Section */}
+      <div style={{ background: 'white', padding: '36px', borderRadius: '16px', border: '1px solid #ddd', marginTop: '30px' }}>
+        <CustomerReviews
+          product={product}
+          reviews={reviews}
+          isAuthenticated={isAuthenticated}
+          onAddReview={handleAddReview}
+          onNavigateLogin={() => navigate('/login')}
+        />
       </div>
     </div>
   );

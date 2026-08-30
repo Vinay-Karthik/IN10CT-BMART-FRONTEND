@@ -19,6 +19,7 @@ const authSlice = createSlice({
       localStorage.setItem('bmart_token', token);
       if (refreshToken) localStorage.setItem('bmart_refresh_token', refreshToken);
       localStorage.setItem('bmart_user', JSON.stringify(user));
+      document.cookie = `bmart_token=${token}; path=/; max-age=86400; SameSite=Lax`;
     },
     logout: (state) => {
       state.token = null;
@@ -27,6 +28,7 @@ const authSlice = createSlice({
       localStorage.removeItem('bmart_token');
       localStorage.removeItem('bmart_refresh_token');
       localStorage.removeItem('bmart_user');
+      document.cookie = "bmart_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
     },
     updateUser: (state, action) => {
       state.user = { ...state.user, ...action.payload };

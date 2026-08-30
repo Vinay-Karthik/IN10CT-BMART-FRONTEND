@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Heart, Star, ShoppingBag, Check } from 'lucide-react';
+import { Heart, Star, ShoppingBag, Check, Bell } from 'lucide-react';
 import { cartApi, wishlistApi } from '../api/shopApi';
-import { setCart } from '../store/slices/cartSlice';
+import { setCart, addToCartLocal } from '../store/slices/cartSlice';
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
@@ -11,20 +11,42 @@ export default function ProductCard({ product }) {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
+  const [notified, setNotified] = useState(false);
+
+  const stock = product.stock != null ? product.stock : 10;
+  const isOutOfStock = stock <= 0;
 
   const handleAddToCart = (e) => {
     e.preventDefault();
+    if (isOutOfStock) return;
+
     if (!isAuthenticated) {
-      navigate('/login');
+      const currentPath = window.location.pathname + window.location.search;
+      navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
       return;
     }
+
     cartApi.addToCart(product.productId, 1).then(res => {
-      if (res.success && res.data) {
-        dispatch(setCart(res.data));
-        setAdded(true);
-        setTimeout(() => setAdded(false), 2000);
+      const cartObj = res.data || res;
+      if (cartObj) {
+        dispatch(setCart(cartObj));
       }
-    }).catch(err => alert(err.message || 'Error adding to cart'));
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    }).catch(err => {
+      if (err?.status === 401 || err?.message?.includes('unauthenticated') || err?.message?.includes('expired')) {
+        const currentPath = window.location.pathname + window.location.search;
+        navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      } else {
+        alert(err?.message || 'Failed to add product to cart');
+      }
+    });
+  };
+
+  const handleNotifyMe = (e) => {
+    e.preventDefault();
+    setNotified(true);
+    alert(`Notification set! We'll notify you as soon as "${product.name}" is back in stock.`);
   };
 
   const handleToggleWishlist = (e) => {
@@ -38,6 +60,23 @@ export default function ProductCard({ product }) {
         setIsWishlisted(res.data);
       }
     }).catch(() => {});
+  };
+
+  const handleImgError = (e) => {
+    const t = (product.name || '').toLowerCase();
+    let fallback = 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&q=80';
+    if (t.includes('backpack') || t.includes('rucksack') || t.includes('bag') || t.includes('tourist') || t.includes('travel')) {
+      fallback = 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80';
+    } else if (t.includes('shoe') || t.includes('sneaker') || t.includes('nike') || t.includes('footwear')) {
+      fallback = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80';
+    } else if (t.includes('headphone') || t.includes('earphone') || t.includes('audio') || t.includes('sound')) {
+      fallback = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80';
+    } else if (t.includes('watch') || t.includes('smartwatch')) {
+      fallback = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
+    } else if (t.includes('shirt') || t.includes('tshirt') || t.includes('apparel') || t.includes('cloth')) {
+      fallback = 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&q=80';
+    }
+    e.target.src = fallback;
   };
 
   return (
@@ -54,7 +93,12 @@ export default function ProductCard({ product }) {
               Sale
             </span>
           )}
-          <img src={product.imageUrl} alt={product.name} className="product-img" />
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="product-img"
+            onError={handleImgError}
+          />
         </div>
       </Link>
 
@@ -83,13 +127,44 @@ export default function ProductCard({ product }) {
         </button>
       </div>
 
-      <button 
-        className={added ? "btn-amber" : "btn-primary"} 
-        onClick={handleAddToCart}
-        style={{ marginTop: '14px' }}
-      >
-        {added ? 'Added to Cart' : 'Add to Cart'}
-      </button>
+      {/* Stock Availability Info */}
+      <div style={{ marginTop: '6px', fontSize: '0.8rem', fontWeight: '700' }}>
+        {isOutOfStock ? (
+          <span style={{ color: '#cc0c39' }}>Out of Stock</span>
+        ) : stock <= 5 ? (
+          <span style={{ color: '#b12704' }}>Only {stock} left in stock</span>
+        ) : (
+          <span style={{ color: '#007600' }}>In Stock ({stock} available)</span>
+        )}
+      </div>
+
+      {/* Action Button: Add to Cart OR Notify Me */}
+      {isOutOfStock ? (
+        <button 
+          className={notified ? "btn-notify-success" : "btn-notify"} 
+          onClick={handleNotifyMe}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Bell size={16} color={notified ? "#ffffff" : "#febd69"} /> {notified ? "✓ Notified" : "Notify Me"}
+          </span>
+        </button>
+      ) : (
+        <button 
+          className={added ? "btn-amber" : "btn-primary"} 
+          onClick={handleAddToCart}
+          style={{ marginTop: '10px' }}
+        >
+          {added ? (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <Check size={16} /> Added to Cart
+            </span>
+          ) : (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <ShoppingBag size={16} /> Add to Cart
+            </span>
+          )}
+        </button>
+      )}
     </div>
   );
 }

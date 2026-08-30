@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { authApi } from '../api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, RefreshCw } from 'lucide-react';
 
 export default function OtpVerifyPage() {
   const [searchParams] = useSearchParams();
@@ -15,6 +15,16 @@ export default function OtpVerifyPage() {
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [countdown, setCountdown] = useState(30);
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -37,23 +47,35 @@ export default function OtpVerifyPage() {
   };
 
   const handleResend = async () => {
+    if (countdown > 0 || resending) return;
     setMsg('');
     setError('');
+    setResending(true);
     try {
       const res = await authApi.resendOtp(target, 'REGISTRATION');
-      if (res.success) setMsg('OTP resent successfully!');
+      if (res.success) {
+        setMsg('Verification OTP code has been resent to your email address!');
+        setCountdown(30);
+      } else {
+        setError(res.message || 'Failed to resend OTP');
+      }
     } catch (err) {
-      setError('Error resending OTP');
+      setError('Error resending OTP code');
+    } finally {
+      setResending(false);
     }
   };
 
   return (
     <div className="container" style={{ maxWidth: '420px', margin: '60px auto' }}>
-      <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #ddd', textAlign: 'center' }}>
+      <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #ddd', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
         <ShieldCheck size={48} color="#f08804" style={{ margin: '0 auto 12px' }} />
         <h2 style={{ fontSize: '1.4rem', fontWeight: '800' }}>Enter Verification Code</h2>
-        <p style={{ color: '#555', fontSize: '0.9rem', margin: '8px 0 20px' }}>
-          We sent a 6-digit OTP code to <strong>{target}</strong>
+        <p style={{ color: '#555', fontSize: '0.9rem', margin: '8px 0 4px' }}>
+          We sent a 6-digit verification code to <strong>{target}</strong>
+        </p>
+        <p style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '18px' }}>
+          (If not in your Inbox, please check your <strong>Spam / Junk</strong> or <strong>Promotions</strong> folder)
         </p>
 
         {error && <div style={{ background: '#fff5f5', color: '#c53030', border: '1px solid #feb2b2', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px' }}>{error}</div>}
@@ -70,17 +92,32 @@ export default function OtpVerifyPage() {
             style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ccc', textAlign: 'center', letterSpacing: '6px', fontSize: '1.4rem', fontWeight: '700', marginBottom: '20px' }}
           />
 
-          <button type="submit" disabled={loading} className="btn-amber" style={{ padding: '12px', fontSize: '1rem' }}>
+          <button type="submit" disabled={loading} className="btn-amber" style={{ padding: '12px', fontSize: '1rem', width: '100%' }}>
             {loading ? 'Verifying...' : 'Verify OTP & Continue'}
           </button>
         </form>
 
-        <button 
-          onClick={handleResend}
-          style={{ background: 'none', border: 'none', color: '#007185', cursor: 'pointer', fontSize: '0.85rem', marginTop: '16px' }}
-        >
-          Didn't receive code? Resend OTP
-        </button>
+        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #eee' }}>
+          <button 
+            type="button"
+            onClick={handleResend}
+            disabled={countdown > 0 || resending}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              color: countdown > 0 ? '#94a3b8' : '#007185', 
+              cursor: countdown > 0 ? 'not-allowed' : 'pointer', 
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <RefreshCw size={16} className={resending ? 'spin' : ''} />
+            {resending ? 'Resending OTP...' : countdown > 0 ? `Resend OTP code in ${countdown}s` : "Didn't receive code? Resend OTP via Email"}
+          </button>
+        </div>
       </div>
     </div>
   );

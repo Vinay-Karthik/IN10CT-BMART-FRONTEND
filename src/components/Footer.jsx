@@ -40,7 +40,6 @@ export default function Footer() {
 
         <div>
           <h4 style={{ fontSize: '0.9rem', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-dark)' }}>Make Money with Us</h4>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Sell on B-MART</p>
           <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Protect and Build Your Brand</p>
           <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>B-MART Global Selling</p>
           <p style={{ color: 'var(--text-muted)', marginBottom: '8px' }}>Become an Affiliate</p>

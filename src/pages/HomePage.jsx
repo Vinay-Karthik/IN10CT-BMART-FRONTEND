@@ -101,19 +101,34 @@ export default function HomePage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '40px' }}>
             Explore curated collections designed specifically for your style.
           </p>
-          <div className="editorial-category-grid">
-            {categories.map((cat) => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+            {(categories.length >= 4 ? categories.slice(0, 4) : [
+              { categoryId: 1, categoryName: 'Handbags & Purses' },
+              { categoryId: 2, categoryName: 'Backpacks & Travel' },
+              { categoryId: 3, categoryName: 'Tech & Laptop Bags' },
+              { categoryId: 4, categoryName: 'Fashion Accessories' }
+            ]).map((cat, idx) => (
               <Link 
-                key={cat.categoryId} 
+                key={cat.categoryId || idx} 
                 to={`/products?categoryId=${cat.categoryId}`}
-                className="category-editorial-card"
+                style={{
+                  background: '#ffffff',
+                  color: '#0f172a',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '20px 16px',
+                  textAlign: 'center',
+                  fontWeight: '800',
+                  fontSize: '1rem',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  transition: 'all 0.2s ease',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <img src={cat.imageUrl} alt={cat.categoryName} className="category-editorial-img" />
-                <div className="category-editorial-overlay">
-                  <div className="category-editorial-title">
-                    {cat.categoryName}
-                  </div>
-                </div>
+                {cat.categoryName}
               </Link>
             ))}
           </div>
